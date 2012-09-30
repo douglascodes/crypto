@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="ISO-8859-15"?>
+<!DOCTYPE bibliography PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+          "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<bibliography id="philosophy">
+    <biblioentry id="ISBN0-19-285423-2">
+      <author>
+        <firstname>Bertrand</firstname>
+        <surname>Russell</surname>
+      </author>
+      <title>The Problems of Philosophy</title>
+      <publisher>
+        <publishername>Oxford University Press</publishername>
+      </publisher>
+      <pubdate>1912</pubdate>
+   </biblioentry>
+</bibliography>
