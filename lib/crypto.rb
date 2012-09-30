@@ -7,13 +7,14 @@ include REXML
 include ActionView::Helpers::SanitizeHelper
 
 class Solver
-  attr_accessor :p_list, :solved, :current_puzzle, :pop_w
+  attr_accessor :p_list, :solved, :current_puzzle, :pop_w, :pop_l, :dict, :short_dict
   
   def initialize
     @p_list = []
     @solved = 0
     @pop_w = get_1000_words()
-    @dict = get_full_dict()
+    @pop_l = %w( E T A O I N S H R D L C U M W F G Y P B V K J X Q Z ) 
+    @dict, @short_dict = get_dicts()
   end
   
   def get_feed(xmlfeed='http://www.threadbender.com/rss.xml')
@@ -31,11 +32,24 @@ class Solver
     return pop_w_list
   end 
   
-  def find_puzzles
-      
-  end
+  def get_dicts(file='.\bin\english.0')
+    s_words = []
+    words = IO.readlines(file)
+    words.each { |w| 
+      if w.include? "'" 
+        w.clear
+      end
+      w.chomp!
+      w.upcase!
+      if w.length <= 4
+        s_words << w
+      end
+    }
+    words.delete('')
+    s_words.delete('')
+  return words, s_words
+  end 
     
-  
   def find_puzzles
     
   end
@@ -68,7 +82,6 @@ class Solver
     return a, b 
 
     def solve(puzzle)
-      
       if true then puzzle.set_solve_date() end
     end
 

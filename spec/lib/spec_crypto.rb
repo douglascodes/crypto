@@ -61,8 +61,27 @@ class TestSolver
       @test_solver.pop_w.length.should eq(1000)
     end
     
-
-
+    it "should initialize with a list of letters sorted by popularity" do
+      @test_solver.pop_l[0].should eq('E')
+      @test_solver.pop_l[6].should eq('S')
+      @test_solver.pop_l[-1].should eq('Z')
+    end
+    
+    it "should have two dictionaries (small, regular)" do
+      @test_solver.dict.should be_true
+      @test_solver.short_dict.should be_true
+      @test_solver.dict.empty?.should == false
+      @test_solver.short_dict.empty?.should == false
+    end
+    
+    it "should correctly test if words are present" do
+      @test_solver.dict.should include('BUG')
+      @test_solver.short_dict.should include('BUG')
+      @test_solver.dict.should include('UNITED')
+      @test_solver.short_dict.should_not include('UNITED')
+       
+    end
+    
   end
 end
   
