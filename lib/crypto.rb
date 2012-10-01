@@ -1,22 +1,28 @@
 require 'net/http'
 require 'rexml/document'
 require 'action_view'
-require 'spellchecker'
 require 'date' 
 include REXML
 include ActionView::Helpers::SanitizeHelper
 
 class Solver
-  attr_accessor :p_list, :solved, :current_puzzle, :pop_w, :pop_l, :dict, :short_dict
+  attr_accessor :p_list, :solved, :current_puzzle, :pop_w,
+    :pop_l, :dict, :short_dict, :crypto, :puzz_letters
   
   def initialize
-    @p_list = []
+    @p_list = get_puzzles()
     @solved = 0
     @pop_w = get_1000_words()
     @pop_l = %w( E T A O I N S H R D L C U M W F G Y P B V K J X Q Z ) 
     @dict, @short_dict = get_dicts()
   end
-  
+
+  def get_puzzles
+    f = Document.new(get_feed())
+    r = f.root
+    return conform_puzzles(r)
+  end
+    
   def get_feed(xmlfeed='http://www.threadbender.com/rss.xml')
       feed = URI(xmlfeed)
       feed = Net::HTTP.get(feed)
@@ -29,9 +35,12 @@ class Solver
       x.chomp!
     }
     pop_w_list.delete('')
+    pop_w_list.sort!{ |a,b|
+      a.length <=> b.length
+    }
     return pop_w_list
   end 
-  
+
   def get_dicts(file='.\bin\english.0')
     s_words = []
     words = IO.readlines(file)
@@ -49,17 +58,14 @@ class Solver
     s_words.delete('')
   return words, s_words
   end 
-    
-  def find_puzzles
-    
-  end
   
   def conform_puzzles(root)
+    p_list = []
     root.each_element('//item') { |item|
       desc, author, date = break_up_puzzle(item)
-      @p_list << Puzzle.new(desc, author, date)
+      p_list << Puzzle.new(desc, author, date)
     }
-    return @p_list
+    return p_list
   end
   
   def break_up_puzzle(p)
@@ -72,27 +78,34 @@ class Solver
   end
   
   def seperate_author(unbroken)
+    unbroken.downcase!
     a, b = unbroken.split(". - ")
     a.delete!(".,!?':;&()")
     a.strip!
-    a.downcase!
     b.delete!(".,!?':;&()")
     b.strip!
-    b.downcase!
     return a, b 
+  end
 
-    def solve(puzzle)
-      if true then puzzle.set_solve_date() end
-    end
-
-    def generate_possible 
-      
-    end
+  def solve(crypto)
     
-    def check_word_in_dict(word)
-      
-    end
-
+    
+    if true then puzzle.set_solve_date() end
+  end
+  
+  def pick_apart_puzzle(puzz)
+    @crypto = []
+    @current_puzzle = puzz
+    @crypto = (puzz.crypto.split).sort!{ |a,b|
+    a.length <=> b.length
+  }  
+  end
+  
+  def poss(word)
+    if @pop_w.include? word then return true end
+    if @short_dict.include? word then return true end
+    if @dict.include? word then return true end
+      return false
   end
 end
   
@@ -122,7 +135,7 @@ class Letter
   attr_accessor :name, :not_possible
     
     def initialize(itself)
-      @name = @not_possible = itself
+      @name = @not_possible = itself.upcase
           
     end  
 
