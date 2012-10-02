@@ -7,13 +7,12 @@ include ActionView::Helpers::SanitizeHelper
 
 class Solver
   attr_accessor :p_list, :solved, :current_puzzle, :pop_w,
-    :pop_l, :dict, :short_dict, :crypto, :puzz_letters
+    :pop_l, :dict, :short_dict, :crypto, :puzz_letters, :let_list
   
   def initialize
     @p_list = get_puzzles()
     @solved = 0
     @pop_w = get_1000_words()
-    @pop_l = %w( E T A O I N S H R D L C U M W F G Y P B V K J X Q Z ) 
     @dict, @short_dict = get_dicts()
   end
 
@@ -88,17 +87,40 @@ class Solver
   end
 
   def solve(crypto)
-    
+    run_singles(crypto)
     
     if true then puzzle.set_solve_date() end
   end
   
-  def pick_apart_puzzle(puzz)
+  def run_singles(crypto)
+    crypto.each { |word|
+      if word.length == 1
+      
+      word.chars { |c|
+        while c == c.downcase || 
+          
+        end
+      }
+          
+        
+      end      
+    }
+  end
+  
+  def set_up_puzzle(puzz)
     @crypto = []
     @current_puzzle = puzz
+    set_letters()
     @crypto = (puzz.crypto.split).sort!{ |a,b|
     a.length <=> b.length
   }  
+  end
+  
+  def set_letters()
+    @let_list = []
+      for l in "A".."Z"
+        @let_list << Letter.new(l)
+      end
   end
   
   def poss(word)
@@ -132,11 +154,14 @@ class Puzzle
 end
 
 class Letter
-  attr_accessor :name, :not_possible
-    
+  attr_accessor :name, :not_possible, :possible
+  @@pop_l = %w( E T A O I N S H R D L C U M W F G Y P B V K J X Q Z ) 
+
     def initialize(itself)
-      @name = @not_possible = itself.upcase
-          
+      @name = itself.downcase
+      @not_possible = itself.upcase
+      @possible = @@pop_l
+      @possible.delete(itself.upcase)       
     end  
 
 end

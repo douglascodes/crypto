@@ -61,13 +61,6 @@ class TestSolver
       @ts.pop_w.length.should eq(1000)
     end
     
-    it "should initialize with a list of letters sorted by popularity" do
-      @ts.pop_l[0].should eq('E')
-      @ts.pop_l[6].should eq('S')
-      @ts.pop_l[-1].should eq('Z')
-      @ts.pop_l.length.should eq(26)
-    end
-    
     it "should have two dictionaries (small, regular)" do
       @ts.dict.should be_true
       @ts.short_dict.should be_true
@@ -90,12 +83,14 @@ class TestSolver
     
     it "should start a puzzle by splitting and sorting words" do
       @ts.p_list = @ts.get_puzzles()
-      @ts.pick_apart_puzzle(@ts.p_list[1])
+      @ts.set_up_puzzle(@ts.p_list[1])
       @ts.crypto.length.should be > 0 
       @ts.crypto[0].length.should < @ts.crypto[-1].length
       @ts.crypto[1].length.should < @ts.crypto[-2].length
       @ts.crypto[2].length.should <= @ts.crypto[3].length 
-      @ts.crypto[3].length.should <= @ts.crypto[4].length 
+      @ts.crypto[3].length.should <= @ts.crypto[4].length
+      @ts.let_list.length.should eq(26)
+       
     end
     
   end
@@ -120,7 +115,18 @@ end
 
 class TestLetter
   describe Letter do
-    it "should something"
-        
+    before do
+      @let_list = []
+      for l in 'A'..'Z'
+        @let_list << Letter.new(l)
+      end
+    end
+
+    it "should not have itself in possible list" do
+        for x in @let_list
+          x.possible.include?(x.name).should_not be_true
+        end
+    end
+  
   end
 end
