@@ -5,24 +5,26 @@ require 'date'
 include REXML
 include ActionView::Helpers::SanitizeHelper
 
-class Solver
+class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Saves em.
   attr_accessor :p_list, :solved, :current_puzzle, :pop_w,
     :pop_l, :dict, :short_dict, :crypto, :puzz_letters, :let_list
   
   def initialize
-    @p_list = get_puzzles()
-    @solved = 0
-    @pop_w = get_1000_words()
-    @dict, @short_dict = get_dicts()
+    @p_list = get_puzzles() #List of puzzle objects
+    @solved = 0             #Simple enumerator for number of solved puzzles
+    @pop_w = get_1000_words() #Sets the possible dictionaries. POP_W is the top 1000 English words 
+    @dict, @short_dict = get_dicts()  #Sets a small and full dictionary
   end
 
   def get_puzzles
+    #Loads puzzles for the solver class to work on
     f = Document.new(get_feed())
     r = f.root
     return conform_puzzles(r)
   end
     
   def get_feed(xmlfeed='http://www.threadbender.com/rss.xml')
+    #Downloads an XML feed. The default is the test one.
       feed = URI(xmlfeed)
       feed = Net::HTTP.get(feed)
       return feed
@@ -40,13 +42,12 @@ class Solver
     return pop_w_list
   end 
 
-  def get_dicts(file='.\bin\english.0')
+  def get_dicts(file='.\bin\english.0') #Uses the included open source dictionary of english words
+    #Returns two versions, a small one (4 <= letters) and a full one. Stripped of possesive versions.
     s_words = []
     words = IO.readlines(file)
     words.each { |w| 
-      if w.include? "'" 
-        w.clear
-      end
+      if w.include? "'" then next end
       w.chomp!
       w.upcase!
       if w.length <= 4
@@ -59,9 +60,10 @@ class Solver
   end 
   
   def conform_puzzles(root)
+    #Strips XML tags and creates a list of Puzzle objects
     p_list = []
     root.each_element('//item') { |item|
-      desc, author, date = break_up_puzzle(item)
+      desc, author, date = break_up_puzzle(item)  #Seperates the extracted puzzle into three parts
       p_list << Puzzle.new(desc, author, date)
     }
     return p_list
@@ -77,8 +79,9 @@ class Solver
   end
   
   def seperate_author(unbroken)
+    #Sets puzzle to unsolved letters (downcase) and removes punctuation
     unbroken.downcase!
-    a, b = unbroken.split(". - ")
+    a, b = unbroken.split(/[.?!] - /)
     a.delete!(".,!?':;&()")
     a.strip!
     b.delete!(".,!?':;&()")
@@ -87,27 +90,37 @@ class Solver
   end
 
   def solve(crypto)
-    run_singles(crypto)
+    crypto.each { |word|
+      brute_thru_word( word )
+      
+    }
     
-    if true then puzzle.set_solve_date() end
+    #if true then puzzle.set_solve_date() end
   end
   
-  def run_singles(crypto)
-    crypto.each { |word|
-      if word.length == 1
-      
-      word.chars { |c|
-        while c == c.downcase || 
-          
-        end
-      }
-          
-        
-      end      
+  def brute_thru_word(word)
+    u_letters = word.squeeze()
+    count = u_letters.length
+    letters = @let_list.select { |let|
+      u_letters.include?(let.name)
     }
+    brute_thru_letters(word, u_letters, letters, count)
+  end
+  
+  def brute_thru_letters(word="xyz", u_letters, letters, count)
+    for x in 0..count
+      word_x = word
+      max_possible = letters[x].possible.length
+      for y in 0..max_possible
+        word_y = word_x
+        
+      end
+      
+    end
   end
   
   def set_up_puzzle(puzz)
+    #Breaks PUZZ into the crypto array sorted by word size
     @crypto = []
     @current_puzzle = puzz
     set_letters()
@@ -117,13 +130,15 @@ class Solver
   end
   
   def set_letters()
+    #Creates an alphabetical list of LETTER objects
     @let_list = []
-      for l in "A".."Z"
+      for l in "a".."z"
         @let_list << Letter.new(l)
       end
   end
   
   def poss(word)
+    #Checks each succesively large dictionary for presence of the passed string 
     if @pop_w.include? word then return true end
     if @short_dict.include? word then return true end
     if @dict.include? word then return true end
@@ -132,13 +147,16 @@ class Solver
 end
   
 class Puzzle
-  attr_accessor :crypto, :solution, :author_sol, :author, :publ_date, :solve_time
+  attr_accessor :crypto, :solution, :author_sol, :author, :publ_date, :solve_time,
+    :uniques, :full_uniques
   
   def initialize(crypto='ABCDEF', author="Bace Troncons", publ_date=Time.now)
-    @crypto = crypto
-    @author = author
-    @publ_date = publ_date
-    @solve_time = nil
+    @crypto = crypto          #The seperated cryptogram from the author section
+    @author = author          #The seperated author section for the crpytogram
+    @publ_date = publ_date    #The seperated date value
+    @solve_time = nil         #Var for the date/time the solution was first made
+    @uniques = @crypto.squeeze()
+    @full_uniques = (@crypto + @author).squeeze()
   end
   
   def set_solve_date
@@ -154,10 +172,16 @@ class Puzzle
 end
 
 class Letter
+  #Letter objects that contain their own NAME, and a list of POSSIBLE interpretations
+  #It is assumed that by the rules of the cryptogram that they cannot end up being themself
+
   attr_accessor :name, :not_possible, :possible
   @@pop_l = %w( E T A O I N S H R D L C U M W F G Y P B V K J X Q Z ) 
 
-    def initialize(itself)
+
+  def initialize(itself)
+      #Sets the possible list, and the self.name
+      #lowercase letters are the unchanged letters, upcase is solved letters
       @name = itself.downcase
       @not_possible = itself.upcase
       @possible = @@pop_l

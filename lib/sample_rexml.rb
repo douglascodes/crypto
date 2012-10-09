@@ -1,22 +1,25 @@
 require 'net/http'
 require 'rexml/document'
 require 'action_view'
+require 'date' 
 include REXML
 include ActionView::Helpers::SanitizeHelper
 
-feed = URI('http://threadbender.com/rss.xml')
-feed = Document.new(Net::HTTP.get(feed))
-
-#root = feed.root
-#root.each_element('//item') { |item|
-#  desc = item.delete_element('description').to_s
-#  desc = strip_tags(desc)
-#  date = item.delete_element('pubDate').to_s
-#  date = strip_tags(date)
-#  puts desc
-#  puts date
-#}
-
-a, b = "UWDC W FXWYFC! WII IREC RA W FXWYFC. UXC QWY LXB MBCA EVZUXCAU RA MCYCZWIIH UXC BYC LXB RA LRIIRYM UB TB WYT TWZC. - TWIC FWZYCMRC".split(". - ")
-puts a
-puts b
+word = "paper"
+sqz = "paper".squeeze()
+count = word.length
+alphabet = ('a'..'z')
+print sqz
+print "paper".squeeze()
+for x in 'a'..'z'
+  sub_x = sqz[0]
+  x_word = word.sub(/#{sub_x}/, x)
+  for y in 'a'..'z'
+    sub_y = sqz[1]
+    y_word = x_word.sub(/#{sub_y}/, y)
+    alphabet.each { |z|
+      sub_z = sqz[2]
+      z_word = y_word.sub(/#{sub_z}/, z.to_s)
+      }
+  end
+end

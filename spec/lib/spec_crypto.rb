@@ -50,7 +50,7 @@ class TestSolver
       @ts.p_list[0].crypto.should be_true
     end
     
-    it "should split the string at the '. -' point" do
+    it "should split the string at the /[?.!] -/ point" do
       a, b = @ts.seperate_author("UWDC W FXWYFC! WII IREC RA W FXWYFC. UXC QWY LXB MBCA EVZUXCAU RA MCYCZWIIH UXC BYC LXB RA LRIIRYM UB TB WYT TWZC. - TWIC FWZYCMRC")
       a.should eq("UWDC W FXWYFC WII IREC RA W FXWYFC UXC QWY LXB MBCA EVZUXCAU RA MCYCZWIIH UXC BYC LXB RA LRIIRYM UB TB WYT TWZC".downcase)
       b.should eq("TWIC FWZYCMRC".downcase)
@@ -110,6 +110,18 @@ class TestPuzzle
       p.author.should be_true
     end
   
+    it "should have a list of unique letters" do
+      p = Puzzle.new("ABCDDDDDD",
+        "DDDEEEEEF",
+        Date.parse("Thu, 27 Sep 2012 23:45:00 -0400"))
+      p.uniques.should be_true
+      p.uniques.should be == "ABCD"
+      p.uniques.length.should eq(4)
+      p.full_uniques.length.should eq(6)      
+    end
+    
+    
+    
   end
 end
 
@@ -117,7 +129,7 @@ class TestLetter
   describe Letter do
     before do
       @let_list = []
-      for l in 'A'..'Z'
+      for l in 'a'..'z'
         @let_list << Letter.new(l)
       end
     end
