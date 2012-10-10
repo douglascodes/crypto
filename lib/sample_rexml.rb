@@ -1,15 +1,10 @@
-require 'net/http'
-require 'rexml/document'
-require 'action_view'
-require 'date' 
-include REXML
-include ActionView::Helpers::SanitizeHelper
-
 word = "paper"
 sqz = "paper".squeeze()
+s = sqz.squeeze()
 count = word.length
 alphabet = ('a'..'z')
 print sqz
+print s
 print "paper".squeeze()
 for x in 'a'..'z'
   sub_x = sqz[0]

@@ -5,10 +5,22 @@ require 'date'
 include REXML
 include ActionView::Helpers::SanitizeHelper
 
+module Unique
+  def unique_ify(word)
+    u = ''
+    word.each_char { |c| 
+    if u.include? c then next end
+      u << c
+    }
+    return u
+  end
+end
+
+include Unique
+
 class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Saves em.
   attr_accessor :p_list, :solved, :current_puzzle, :pop_w,
     :pop_l, :dict, :short_dict, :crypto, :puzz_letters, :let_list
-  
   def initialize
     @p_list = get_puzzles() #List of puzzle objects
     @solved = 0             #Simple enumerator for number of solved puzzles
@@ -91,33 +103,43 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
 
   def solve(crypto)
     crypto.each { |word|
-      brute_thru_word( word )
+      if word.length != 1 then break end
       
+      letter1 = get_lett_obj(word[0])
+      letter1.possible.each { |z|
+        p_word = word.gsub(/#{letter1.name}/, z.to_s)
+      }
     }
-    
-    #if true then puzzle.set_solve_date() end
   end
   
-  def brute_thru_word(word)
-    u_letters = word.squeeze()
-    count = u_letters.length
-    letters = @let_list.select { |let|
-      u_letters.include?(let.name)
+  def get_lett_obj(letter)
+    @let_list.each { |o|
+      if o.name != letter then next end
+      return o
     }
-    brute_thru_letters(word, u_letters, letters, count)
-  end
+    return false
+  end  
   
-  def brute_thru_letters(word="xyz", u_letters, letters, count)
-    for x in 0..count
-      word_x = word
-      max_possible = letters[x].possible.length
-      for y in 0..max_possible
-        word_y = word_x
-        
-      end
-      
-    end
-  end
+#  def brute_thru_word(word)
+#    u_letters = word.squeeze()
+#    count = u_letters.length
+#    letters = @let_list.select { |let|
+#      u_letters.include?(let.name)
+#    }
+#    brute_thru_letters(word, u_letters, letters, count)
+#  end
+#  
+#  def brute_thru_letters(word="xyz", u_letters, letters, count)
+#    for x in 0..count
+#      word_x = word
+#      max_possible = letters[x].possible.length
+#      for y in 0..max_possible
+#        word_y = word_x
+#        
+#      end
+#      
+#  end
+
   
   def set_up_puzzle(puzz)
     #Breaks PUZZ into the crypto array sorted by word size
@@ -145,18 +167,17 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
       return false
   end
 end
-  
+
 class Puzzle
   attr_accessor :crypto, :solution, :author_sol, :author, :publ_date, :solve_time,
     :uniques, :full_uniques
-  
   def initialize(crypto='ABCDEF', author="Bace Troncons", publ_date=Time.now)
     @crypto = crypto          #The seperated cryptogram from the author section
     @author = author          #The seperated author section for the crpytogram
     @publ_date = publ_date    #The seperated date value
     @solve_time = nil         #Var for the date/time the solution was first made
-    @uniques = @crypto.squeeze()
-    @full_uniques = (@crypto + @author).squeeze()
+    @uniques = unique_ify(@crypto)
+    @full_uniques = unique_ify((@crypto + @author))
   end
   
   def set_solve_date
@@ -174,10 +195,9 @@ end
 class Letter
   #Letter objects that contain their own NAME, and a list of POSSIBLE interpretations
   #It is assumed that by the rules of the cryptogram that they cannot end up being themself
-
   attr_accessor :name, :not_possible, :possible
   @@pop_l = %w( E T A O I N S H R D L C U M W F G Y P B V K J X Q Z ) 
-
+  
 
   def initialize(itself)
       #Sets the possible list, and the self.name
@@ -189,26 +209,3 @@ class Letter
     end  
 
 end
-#s = Solver.new()
-#f = s.get_feed()
-#f = Document.new(f)
-#s.conform_puzzles(f)
-#s.p_list.each { |x|
-#  p x
-#}
-
-#Break the first part into words.
-
-#option 1
-#Do each variation for each vowel... 
-#check those possibilties against the dictionaries using regular expressions
-
-#option 2
-#Create a set of all letters in the puzzle excluding the author...
-#this is a limited number, much smaller than all possible
-
-
-#techniques
-# utilize lowercase letters for puzzle, Upcase for solutions to prevent overlap
-# run the program against the smallest words... up to 4 letters, as a shield for
-# 
