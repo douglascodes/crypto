@@ -46,6 +46,7 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
     pop_w_list = IO.readlines(file)
     pop_w_list.each { |x| 
       x.chomp!
+      x.upcase!
     }
     pop_w_list.delete('')
     pop_w_list.sort!{ |a,b|
@@ -66,7 +67,9 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
         s_words << w
       end
     }
-    words.delete('')
+    words.delete_if { |w|
+      w.length < 5 # || @pop_w.include?(w)
+    }
     s_words.delete('')
   return words, s_words
   end 
@@ -103,16 +106,60 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
 
   def solve(crypto)
     crypto.each { |word|
-      if word.length != 1 then break end
       
-      letter1 = get_lett_obj(word[0])
-      letter1.possible.each { |z|
-        p_word = word.gsub(/#{letter1.name}/, z.to_s)
-      }
+      passable_words = []
+      u_word = unique_ify(word)
+      count = u_word.length
+      if u_word.length != 1 then next end
+      letter0 = get_lett_obj(u_word[0])
+      letter0.possible.each { |z_0|
+
+          p_word = z_0_word = word.gsub(/#{letter0.name}/, z_0.to_s)
+                    
+          append_true(p_word, passable_words)
+          
+       }
+       remove_badly_formed(passable_words, count)
+       condense_true(u_word, passable_words)
+  }
+  end
+
+  def remove_badly_formed(words, count)
+    #takes out words created from an overlap of letters
+    #where pet and pep are both real words... they have a different unique count
+    #the unique count is important for letter substitution
+    words.delete_if { |w|
+      unique_ify(w).length != count
     }
+    
+  end
+  
+  def condense_true(key, words)
+    #For creating an array for each unique letter containing one of each possibility
+    #the possible letters will shrink each time a word is tested. Till all contain just one
+    #possiblity... or hilarity will ensue in having a cryptogram with an alternate possibility
+    words.map! { |w| unique_ify(w) }
+    
+    for position in 0...key.length
+      letter = get_lett_obj(key[position])
+      letter.possible.clear
+      words.each { |word|
+        if letter.possible.include?(word[position]) then next end
+        letter.possible << word[position]
+      }
+    end
+    
+  end
+  
+  def append_true(word, list)
+    #Simply adds the word to the passed list when it is verified by the dictionary.
+    if poss(word)
+      list << word
+    end 
   end
   
   def get_lett_obj(letter)
+    #Returns the letter object that matches the passed string. Returns false otherwise
     @let_list.each { |o|
       if o.name != letter then next end
       return o
@@ -120,33 +167,13 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
     return false
   end  
   
-#  def brute_thru_word(word)
-#    u_letters = word.squeeze()
-#    count = u_letters.length
-#    letters = @let_list.select { |let|
-#      u_letters.include?(let.name)
-#    }
-#    brute_thru_letters(word, u_letters, letters, count)
-#  end
-#  
-#  def brute_thru_letters(word="xyz", u_letters, letters, count)
-#    for x in 0..count
-#      word_x = word
-#      max_possible = letters[x].possible.length
-#      for y in 0..max_possible
-#        word_y = word_x
-#        
-#      end
-#      
-#  end
-
   
   def set_up_puzzle(puzz)
     #Breaks PUZZ into the crypto array sorted by word size
     @crypto = []
     @current_puzzle = puzz
     set_letters()
-    @crypto = (puzz.crypto.split).sort!{ |a,b|
+    @crypto = (puzz.crypto.split).sort!{ |a,b|  #Sorts words by size
     a.length <=> b.length
   }  
   end
@@ -164,7 +191,7 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
     if @pop_w.include? word then return true end
     if @short_dict.include? word then return true end
     if @dict.include? word then return true end
-      return false
+       return false
   end
 end
 
@@ -196,16 +223,16 @@ class Letter
   #Letter objects that contain their own NAME, and a list of POSSIBLE interpretations
   #It is assumed that by the rules of the cryptogram that they cannot end up being themself
   attr_accessor :name, :not_possible, :possible
-  @@pop_l = %w( E T A O I N S H R D L C U M W F G Y P B V K J X Q Z ) 
+   
   
 
   def initialize(itself)
       #Sets the possible list, and the self.name
       #lowercase letters are the unchanged letters, upcase is solved letters
       @name = itself.downcase
-      @not_possible = itself.upcase
-      @possible = @@pop_l
+      @not_possible = [itself.upcase]
+      @possible = %w( E T A O I N S H R D L C U M W F G Y P B V K J X Q Z )
       @possible.delete(itself.upcase)       
     end  
-
+    
 end

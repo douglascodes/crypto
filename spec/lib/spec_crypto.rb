@@ -70,7 +70,6 @@ class TestSolver
     end
     
     it "should correctly test if words are present" do
-      @ts.dict.should include('BUG')
       @ts.short_dict.should include('BUG')
       @ts.dict.should include('UNITED')
       @ts.short_dict.should_not include('UNITED')
@@ -93,6 +92,53 @@ class TestSolver
        
     end
     
+    it "should find a letter object based on its name" do
+      @ts.set_letters()
+      letter = @ts.get_lett_obj('r')
+      letter.name.should eq('r')
+      letter.possible.include?('r').should_not be_true
+    end
+    
+    it "should append successful words to a given list" do
+    p_words = %w( A B C D E F IN BED NECK I TURF SPELLING )
+    true_words = []
+    p_words.each { |w|
+        @ts.append_true(w.upcase, true_words)
+      }
+    true_words.length.should eq(7)
+
+    true_words = []
+    @ts.set_letters()
+    @ts.let_list.each { |w|
+          @ts.append_true(w.name.upcase, true_words)
+        }
+    true_words.length.should eq(2)
+    end
+    
+    it "should remove words created from overlap" do
+      p_words = %w( BAT TAB CAT STAB COUNT PEP PET )
+      @ts.remove_badly_formed(p_words, 3)
+      p_words.length.should eq(4)
+    end
+    
+    it "should condense and update the possible letters of each encrypted letter" do
+      @ts.set_letters()
+      p_words = %w( BAT TAB CAT PET CAB )
+      key = "xyz"
+      @ts.condense_true(key, p_words)
+      first_letter = @ts.get_lett_obj('x')
+      second_letter = @ts.get_lett_obj('y')
+      third_letter = @ts.get_lett_obj('z')
+      true_1st = %w( B T C P )
+      true_2nd = %w( A E )
+      true_3rd = %w( T B )
+      first_letter.possible.should eq(true_1st)
+      second_letter.possible.should eq(true_2nd)
+      third_letter.possible.should eq(true_3rd)
+      second_letter.possible.should_not eq(true_3rd)
+    end
+    
+      
   end
 end
   
