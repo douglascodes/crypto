@@ -19,13 +19,11 @@ end
 include Unique
 
 class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Saves em.
-  attr_accessor :p_list, :solved, :current_puzzle, :pop_w,
-    :pop_l, :dict, :short_dict, :crypto, :puzz_letters, :let_list
+  attr_accessor :p_list, :solved, :let_list, :dicts
   def initialize
     @p_list = get_puzzles() #List of puzzle objects
     @solved = 0             #Simple enumerator for number of solved puzzles
-    @pop_w = get_1000_words() #Sets the possible dictionaries. POP_W is the top 1000 English words 
-    @dict, @short_dict = get_dicts()  #Sets a small and full dictionary
+    @dicts = set_size_dicts(@dicts)
   end
 
   def get_puzzles
@@ -41,39 +39,21 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
       feed = Net::HTTP.get(feed)
       return feed
   end
- 
-  def get_1000_words(file='.\lib\popular_words.txt')  #Gets an array of the top 100 used English words
-    pop_w_list = IO.readlines(file)
-    pop_w_list.each { |x| 
-      x.chomp!
-      x.upcase!
-    }
-    pop_w_list.delete('')
-    pop_w_list.sort!{ |a,b|
-      a.length <=> b.length
-    }
-    return pop_w_list
-  end 
 
-  def get_dicts(file='.\bin\english.0') #Uses the included open source dictionary of english words
-    #Returns two versions, a small one (4 <= letters) and a full one. Stripped of possesive versions.
-    s_words = []
-    words = IO.readlines(file)
+  def set_size_dicts(dicts)
+    dicts = Array.new(20) { |i| Array.new }    
+    words = IO.readlines('.\bin\english.0')
+    dicts[1] = ['A', 'I']    
     words.each { |w| 
       if w.include? "'" then next end
       w.chomp!
       w.upcase!
-      if w.length <= 4
-        s_words << w
-      end
+      dicts[w.length] ||= Array.new
+      dicts[w.length] << w
     }
-    words.delete_if { |w|
-      w.length < 5 # || @pop_w.include?(w)
-    }
-    s_words.delete('')
-  return words, s_words
-  end 
-  
+    return dicts
+  end
+ 
   def conform_puzzles(root)
     #Strips XML tags and creates a list of Puzzle objects
     p_list = []
@@ -104,26 +84,64 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
     return a, b 
   end
 
-  def solve(crypto)
-    crypto.each { |word|
-      
+  def go_to_work()
+    p = @p_list[3]
+      solve(p)
+      print_solution(p)
+  end
+  
+  def print_solution(puzz)
+    @let_list.each { |l|
+      if l.possible.length != 1 then next end 
+      puzz.crypto.gsub!(/#{l.name}/, l.possible[0].to_s)
+    }
+    puts puzz.crypto
+  end
+ 
+  def solve(puzz)
+    c = puzz.crypto_broken
+    set_letters()
+    
+    for x in 1..c[-1].length
+    c.each { |w|
+      word = w
+      if word.length < x then next end
       passable_words = []
       u_word = unique_ify(word)
       count = u_word.length
-      if u_word.length != 1 then next end
-      letter0 = get_lett_obj(u_word[0])
-      letter0.possible.each { |z_0|
-
-          p_word = z_0_word = word.gsub(/#{letter0.name}/, z_0.to_s)
-                    
-          append_true(p_word, passable_words)
-          
-       }
-       remove_badly_formed(passable_words, count)
-       condense_true(u_word, passable_words)
-  }
+      passable_words = word_looper(0, u_word, word, passable_words)
+      remove_badly_formed(passable_words, count)
+      puts passable_words
+      condense_true(u_word, passable_words)
+      }
+    end
   end
 
+  def word_looper(counter, u_word, word, list)
+    if counter == u_word.length
+      append_true(word, list)
+      return
+    end
+    sub_z = get_lett_obj(u_word[counter])
+    alphabet = sub_z.possible
+    counter += 1
+    alphabet.each { |z|
+          z_word = word.gsub(/#{sub_z.name}/, z.to_s)
+          word_looper(counter, u_word, z_word, list)
+          }
+    return list
+  end
+
+  def count_known_letters(letters)
+    #simple count of letters that have only one left in possible
+    #therefore we KNOW that must be the key. Used to determine confidence level in puzzle
+    count = 0
+    letters.each { |l|
+      if l.possible.length == 1 then count += 1 end
+    }
+    return count
+  end
+  
   def remove_badly_formed(words, count)
     #takes out words created from an overlap of letters
     #where pet and pep are both real words... they have a different unique count
@@ -167,17 +185,6 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
     return false
   end  
   
-  
-  def set_up_puzzle(puzz)
-    #Breaks PUZZ into the crypto array sorted by word size
-    @crypto = []
-    @current_puzzle = puzz
-    set_letters()
-    @crypto = (puzz.crypto.split).sort!{ |a,b|  #Sorts words by size
-    a.length <=> b.length
-  }  
-  end
-  
   def set_letters()
     #Creates an alphabetical list of LETTER objects
     @let_list = []
@@ -188,15 +195,20 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
   
   def poss(word)
     #Checks each succesively large dictionary for presence of the passed string 
-    if @pop_w.include? word then return true end
-    if @short_dict.include? word then return true end
-    if @dict.include? word then return true end
-       return false
+    if @dicts[word.length].include?(word) then return true end
+    return false
+#    if @pop_w.include? word then return true end
+#    if word.length < 5
+#      if @short_dict.include? word then return true end
+#    else
+#      if @dict.include? word then return true end
+#    end
+#    return false
   end
 end
 
 class Puzzle
-  attr_accessor :crypto, :solution, :author_sol, :author, :publ_date, :solve_time,
+  attr_accessor :crypto, :crypto_broken, :solution, :author_sol, :author, :publ_date, :solve_time,
     :uniques, :full_uniques
   def initialize(crypto='ABCDEF', author="Bace Troncons", publ_date=Time.now)
     @crypto = crypto          #The seperated cryptogram from the author section
@@ -205,6 +217,7 @@ class Puzzle
     @solve_time = nil         #Var for the date/time the solution was first made
     @uniques = unique_ify(@crypto)
     @full_uniques = unique_ify((@crypto + @author))
+    set_up_puzzle()
   end
   
   def set_solve_date
@@ -214,6 +227,14 @@ class Puzzle
     @solve_time = Time.now 
   end
 
+  def set_up_puzzle()
+    #Breaks PUZZ into the crypto array sorted by word size
+    @crypto_broken = []
+    @crypto_broken = (@crypto.split).sort{ |a,b|  #Sorts words by size
+    a.length <=> b.length
+  }  
+  end
+  
   def to_s
     print 'Code: ', @crypto,  "\nAuthor: ", @author, "\nDate: ", @publ_date, "\nCompleted: ", @solve_time, "\n"
   end
@@ -224,15 +245,17 @@ class Letter
   #It is assumed that by the rules of the cryptogram that they cannot end up being themself
   attr_accessor :name, :not_possible, :possible
    
-  
-
   def initialize(itself)
-      #Sets the possible list, and the self.name
-      #lowercase letters are the unchanged letters, upcase is solved letters
-      @name = itself.downcase
-      @not_possible = [itself.upcase]
-      @possible = %w( E T A O I N S H R D L C U M W F G Y P B V K J X Q Z )
-      @possible.delete(itself.upcase)       
-    end  
+    #Sets the possible list, and the self.name
+    #lowercase letters are the unchanged letters, upcase is solved letters
+    @name = itself.downcase
+    @not_possible = [itself.upcase]
+    @possible = %w( E T A O I N S H R D L C U M W F G Y P B V K J X Q Z )
+    @possible.delete(itself.upcase)       
+  end  
     
 end
+
+solve = Solver.new
+solve.go_to_work()
+

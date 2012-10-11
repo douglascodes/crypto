@@ -56,23 +56,10 @@ class TestSolver
       b.should eq("TWIC FWZYCMRC".downcase)
       #also converts to downcase for puzzle... UPCASE reserved for solved letters
     end
-
-    it "should initialize with a 1000 word array" do
-      @ts.pop_w.length.should eq(1000)
-    end
-    
-    it "should have two dictionaries (small, regular)" do
-      @ts.dict.should be_true
-      @ts.short_dict.should be_true
-      @ts.dict.empty?.should == false
-      @ts.short_dict.empty?.should == false
-      @ts.short_dict.length.should < @ts.dict.length
-    end
     
     it "should correctly test if words are present" do
-      @ts.short_dict.should include('BUG')
-      @ts.dict.should include('UNITED')
-      @ts.short_dict.should_not include('UNITED')
+      @ts.poss('BUG').should be_true
+      @ts.poss('UNITED').should be_true
       @ts.poss('AXE').should be_true
       @ts.poss('RPPTEAT').should_not be_true
       @ts.poss('REPEAT').should be_true
@@ -82,14 +69,12 @@ class TestSolver
     
     it "should start a puzzle by splitting and sorting words" do
       @ts.p_list = @ts.get_puzzles()
-      @ts.set_up_puzzle(@ts.p_list[1])
-      @ts.crypto.length.should be > 0 
-      @ts.crypto[0].length.should < @ts.crypto[-1].length
-      @ts.crypto[1].length.should < @ts.crypto[-2].length
-      @ts.crypto[2].length.should <= @ts.crypto[3].length 
-      @ts.crypto[3].length.should <= @ts.crypto[4].length
-      @ts.let_list.length.should eq(26)
-       
+      puzz = @ts.p_list[1]
+      puzz.crypto_broken.length.should be > 0 
+      puzz.crypto_broken[0].length.should < puzz.crypto_broken[-1].length
+      puzz.crypto_broken[1].length.should < puzz.crypto_broken[-2].length
+      puzz.crypto_broken[2].length.should <= puzz.crypto_broken[3].length 
+      puzz.crypto_broken[3].length.should <= puzz.crypto_broken[4].length
     end
     
     it "should find a letter object based on its name" do
@@ -138,7 +123,31 @@ class TestSolver
       second_letter.possible.should_not eq(true_3rd)
     end
     
+    it "should loop over each letter in a word creating possible permutations" do
+      @ts.set_letters()
+      list = []
+      word = "xz"
+      u_word = unique_ify(word)
+      count = u_word.length
+      @ts.word_looper(0, u_word, word, list)
+      list.length.should eq(48)
+
+      list = []
+      word = "xzq"
+      u_word = unique_ify(word)
+      count = u_word.length
+      @ts.word_looper(0, u_word, word, list)
+      list.length.should eq(480)
       
+      list = []
+      word = "xjzq"
+      u_word = unique_ify(word)
+      count = u_word.length
+      @ts.word_looper(0, u_word, word, list)
+      list.length.should eq(1764)
+            
+    end
+    
   end
 end
   
