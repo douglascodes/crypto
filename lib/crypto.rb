@@ -1,14 +1,14 @@
 require 'net/http'
 require 'rexml/document'
 require 'action_view'
-require 'date' 
+require 'date'
 include REXML
 include ActionView::Helpers::SanitizeHelper
 
 module Unique
   def unique_ify(word)
     u = ''
-    word.each_char { |c| 
+    word.each_char { |c|
     if u.include? c then next end
       u << c
     }
@@ -32,7 +32,7 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
     r = f.root
     return conform_puzzles(r)
   end
-    
+
   def get_feed(xmlfeed='http://www.threadbender.com/rss.xml')
     #Downloads an XML feed. The default is the test one.
       feed = URI(xmlfeed)
@@ -41,29 +41,29 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
   end
 
   def set_size_dicts(dicts)
-    dicts = Array.new(20) { |i| Array.new }    
+    dicts = Array.new(20) {|i| Array.new}
     words = IO.readlines('.\bin\english.0')
-    dicts[1] = ['A', 'I']    
-    words.each { |w| 
+    dicts[1] = ['A', 'I']
+    words.each { |w|
       if w.include? "'" then next end
       w.chomp!
       w.upcase!
-      dicts[w.length] ||= Array.new
+      dicts[w.length] ||= Set.new
       dicts[w.length] << w
     }
     return dicts
   end
- 
+
   def conform_puzzles(root)
     #Strips XML tags and creates a list of Puzzle objects
-    p_list = []
+    p_list = Array.new
     root.each_element('//item') { |item|
       desc, author, date = break_up_puzzle(item)  #Seperates the extracted puzzle into three parts
       p_list << Puzzle.new(desc, author, date)
     }
     return p_list
   end
-  
+
   def break_up_puzzle(p)
     desc = p.delete_element('description').to_s
     desc = strip_tags(desc)
@@ -72,7 +72,7 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
     date = Date.parse(strip_tags(date))
     return desc, author, date
   end
-  
+
   def seperate_author(unbroken)
     #Sets puzzle to unsolved letters (downcase) and removes punctuation
     unbroken.downcase!
@@ -81,39 +81,44 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
     a.strip!
     b.delete!(".,!?':;&()")
     b.strip!
-    return a, b 
+    return a, b
   end
 
   def go_to_work()
-    p = @p_list[3]
+      p = @p_list.first
       solve(p)
       print_solution(p)
-  end
-  
+
+   end
+
   def print_solution(puzz)
     @let_list.each { |l|
-      if l.possible.length != 1 then next end 
-      puzz.crypto.gsub!(/#{l.name}/, l.possible[0].to_s)
+      if puzz.crypto.include? l.possible[0]
+        puzz.crypto.gsub!(/#{l.name}/, l.possible[1].to_s)
+      else
+        puzz.crypto.gsub!(/#{l.name}/, l.possible[0].to_s)
+      end
     }
     puts puzz.crypto
   end
- 
+
   def solve(puzz)
     c = puzz.crypto_broken
     set_letters()
-    
-    for x in 1..c[-1].length
-    c.each { |w|
-      word = w
-      if word.length < x then next end
-      passable_words = []
-      u_word = unique_ify(word)
-      count = u_word.length
-      passable_words = word_looper(0, u_word, word, passable_words)
-      remove_badly_formed(passable_words, count)
-      puts passable_words
-      condense_true(u_word, passable_words)
-      }
+    for z in 1..3
+      for x in 1..c[-1].length
+      c.each { |w|
+        word = w
+        if word.length > x then next end
+        passable_words = Set.new
+        u_word = unique_ify(word)
+        count = u_word.length
+        passable_words = word_looper(0, u_word, word, passable_words)
+        remove_badly_formed(passable_words, count)
+        passable_words.each { |w| puts w}
+        condense_true(u_word, passable_words)
+        }
+      end
     end
   end
 
@@ -141,7 +146,7 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
     }
     return count
   end
-  
+
   def remove_badly_formed(words, count)
     #takes out words created from an overlap of letters
     #where pet and pep are both real words... they have a different unique count
@@ -149,15 +154,15 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
     words.delete_if { |w|
       unique_ify(w).length != count
     }
-    
+
   end
-  
+
   def condense_true(key, words)
     #For creating an array for each unique letter containing one of each possibility
     #the possible letters will shrink each time a word is tested. Till all contain just one
     #possiblity... or hilarity will ensue in having a cryptogram with an alternate possibility
     words.map! { |w| unique_ify(w) }
-    
+
     for position in 0...key.length
       letter = get_lett_obj(key[position])
       letter.possible.clear
@@ -165,17 +170,18 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
         if letter.possible.include?(word[position]) then next end
         letter.possible << word[position]
       }
+    kill_known_letters_from_other_possibles()
     end
-    
+
   end
-  
+
   def append_true(word, list)
     #Simply adds the word to the passed list when it is verified by the dictionary.
     if poss(word)
       list << word
-    end 
+    end
   end
-  
+
   def get_lett_obj(letter)
     #Returns the letter object that matches the passed string. Returns false otherwise
     @let_list.each { |o|
@@ -183,18 +189,34 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
       return o
     }
     return false
-  end  
-  
+  end
+
+  def kill_known_letters_from_other_possibles()
+    singulars = Set.new
+
+    @let_list.each { |l|
+      if l.possible == 1 then singulars << l end
+    }
+
+    singulars.each { |p|
+     @let_list.each { |l|
+       if l.possible == 1 then next end
+       l.possible.delete(p.possible)
+     }
+    }
+
+  end
+
   def set_letters()
     #Creates an alphabetical list of LETTER objects
-    @let_list = []
+    @let_list = Set.new
       for l in "a".."z"
         @let_list << Letter.new(l)
       end
   end
-  
+
   def poss(word)
-    #Checks each succesively large dictionary for presence of the passed string 
+    #Checks each succesively large dictionary for presence of the passed string
     if @dicts[word.length].include?(word) then return true end
     return false
 #    if @pop_w.include? word then return true end
@@ -219,22 +241,23 @@ class Puzzle
     @full_uniques = unique_ify((@crypto + @author))
     set_up_puzzle()
   end
-  
+
   def set_solve_date
     if @solve_date
       return
-    end    
-    @solve_time = Time.now 
+    end
+    @solve_time = Time.now
   end
 
   def set_up_puzzle()
     #Breaks PUZZ into the crypto array sorted by word size
-    @crypto_broken = []
-    @crypto_broken = (@crypto.split).sort{ |a,b|  #Sorts words by size
+    @crypto_broken = Set.new
+    @crypto_broken = @crypto.split
+    @crypto_broken = @crypto_broken.each.sort { |a,b|  #Sorts words by size
     a.length <=> b.length
-  }  
+  }
   end
-  
+
   def to_s
     print 'Code: ', @crypto,  "\nAuthor: ", @author, "\nDate: ", @publ_date, "\nCompleted: ", @solve_time, "\n"
   end
@@ -244,18 +267,15 @@ class Letter
   #Letter objects that contain their own NAME, and a list of POSSIBLE interpretations
   #It is assumed that by the rules of the cryptogram that they cannot end up being themself
   attr_accessor :name, :not_possible, :possible
-   
+
   def initialize(itself)
     #Sets the possible list, and the self.name
     #lowercase letters are the unchanged letters, upcase is solved letters
     @name = itself.downcase
     @not_possible = [itself.upcase]
-    @possible = %w( E T A O I N S H R D L C U M W F G Y P B V K J X Q Z )
-    @possible.delete(itself.upcase)       
-  end  
-    
+    @possible = Set.new
+    @possible = %w[ E T A O I N S H R D L C U M W F G Y P B V K J X Q Z ]
+    @possible.delete(itself.upcase)
+  end
+
 end
-
-solve = Solver.new
-solve.go_to_work()
-
