@@ -41,16 +41,19 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
   end
 
   def set_size_dicts(dicts)
-    dicts = Array.new(20) {|i| Array.new}
     words = IO.readlines('.\bin\english.0')
-    dicts[1] = ['A', 'I']
+    smith = IO.readlines('.\bin\smith.txt')
+    #words.concat(smith)
+    dicts = Array.new(20)
+    dicts[1] = {'A' => 1 , 'I' => 1}
     words.each { |w|
-      if w.include? "'" then next end
+    #if w.include? "'" then next end
       w.chomp!
       w.upcase!
-      dicts[w.length] ||= Set.new
-      dicts[w.length] << w
+      dicts[w.length] ||= Hash.new
+      dicts[w.length].merge!({w => w.length})
     }
+
     return dicts
   end
 
@@ -77,34 +80,41 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
     #Sets puzzle to unsolved letters (downcase) and removes punctuation
     unbroken.downcase!
     a, b = unbroken.split(/[.?!] - /)
-    a.delete!(".,!?':;&()")
+    a.delete!(".,!?:;&()")
     a.strip!
-    b.delete!(".,!?':;&()")
+    b.delete!(".,!?:;&()")
     b.strip!
     return a, b
   end
 
-  def go_to_work()
-      p = @p_list.first
-      solve(p)
-      print_solution(p)
+  def go_to_work(which=0)
+      #@p_list.each { |p|
+      p = @p_list[which]
+        solve(p)
+        create_solution(p)
+        puts p.solution
+      #}
+  end
 
-   end
-
-  def print_solution(puzz)
+  def create_solution(puzz)
+    puzz.solution = (puzz.crypto << ' - ' << puzz.author)
     @let_list.each { |l|
-      if puzz.crypto.include? l.possible[0]
-        puzz.crypto.gsub!(/#{l.name}/, l.possible[1].to_s)
-      else
-        puzz.crypto.gsub!(/#{l.name}/, l.possible[0].to_s)
+      if l.possible[0]
+        puzz.solution.gsub!(/#{l.name}/, l.possible[0].to_s)
       end
     }
-    puts puzz.crypto
+
   end
 
   def solve(puzz)
     c = puzz.crypto_broken
     set_letters()
+    # puzz.crypto_broken.each { |s|
+    #   if s.length != 1 then next end
+    #     letter = @let_list[s]
+    #     letter.possible = %w( A I )
+    # }
+    # kill_two(@let_list)
     for z in 1..3
       for x in 1..c[-1].length
       c.each { |w|
@@ -115,7 +125,7 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
         count = u_word.length
         passable_words = word_looper(0, u_word, word, passable_words)
         remove_badly_formed(passable_words, count)
-        passable_words.each { |w| puts w}
+        passable_words.each { |w| print w}
         condense_true(u_word, passable_words)
         }
       end
@@ -125,16 +135,28 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
   def word_looper(counter, u_word, word, list)
     if counter == u_word.length
       append_true(word, list)
+      #puts word
       return
     end
-    sub_z = get_lett_obj(u_word[counter])
+    sub_z = @let_list[u_word[counter]]
     alphabet = sub_z.possible
     counter += 1
     alphabet.each { |z|
+          if word.include? z then next end
           z_word = word.gsub(/#{sub_z.name}/, z.to_s)
           word_looper(counter, u_word, z_word, list)
           }
     return list
+  end
+
+  def kill_two(list)
+    check = %w( A I )
+    list.each { |l|
+      if l.possible != check
+        l.possible.delete(check)
+      end
+    }
+
   end
 
   def count_known_letters(letters)
@@ -164,14 +186,16 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
     words.map! { |w| unique_ify(w) }
 
     for position in 0...key.length
-      letter = get_lett_obj(key[position])
-      letter.possible.clear
+      letter = @let_list[key[position]]
+      if letter.possible.frozen? then next end
       words.each { |word|
         if letter.possible.include?(word[position]) then next end
         letter.possible << word[position]
       }
-    kill_known_letters_from_other_possibles()
+
+    kill_singles()
     end
+
 
   end
 
@@ -182,50 +206,35 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
     end
   end
 
-  def get_lett_obj(letter)
-    #Returns the letter object that matches the passed string. Returns false otherwise
-    @let_list.each { |o|
-      if o.name != letter then next end
-      return o
-    }
-    return false
-  end
-
-  def kill_known_letters_from_other_possibles()
+  def kill_singles()
     singulars = Set.new
 
-    @let_list.each { |l|
-      if l.possible == 1 then singulars << l end
+    @let_list.each { |x, l|
+      if l.possible.length == 1 then singulars << l end
     }
 
     singulars.each { |p|
-     @let_list.each { |l|
-       if l.possible == 1 then next end
+     @let_list.each { |x, l|
+       if l.possible.length == 1 then next end
        l.possible.delete(p.possible)
      }
     }
-
   end
 
   def set_letters()
     #Creates an alphabetical list of LETTER objects
-    @let_list = Set.new
+    @let_list = Hash.new
       for l in "a".."z"
-        @let_list << Letter.new(l)
+        @let_list.merge!({l => Letter.new(l)})
       end
+    @let_list.merge!({'\'' => Letter.new('\'')})
+    @let_list.merge!({'-' => Letter.new('-')})
   end
 
   def poss(word)
-    #Checks each succesively large dictionary for presence of the passed string
-    if @dicts[word.length].include?(word) then return true end
+
+    if @dicts[word.length].key?(word) then return true end
     return false
-#    if @pop_w.include? word then return true end
-#    if word.length < 5
-#      if @short_dict.include? word then return true end
-#    else
-#      if @dict.include? word then return true end
-#    end
-#    return false
   end
 end
 
@@ -254,7 +263,7 @@ class Puzzle
     @crypto_broken = Set.new
     @crypto_broken = @crypto.split
     @crypto_broken = @crypto_broken.each.sort { |a,b|  #Sorts words by size
-    a.length <=> b.length
+    unique_ify(a).length <=> unique_ify(b).length
   }
   end
 
@@ -271,6 +280,12 @@ class Letter
   def initialize(itself)
     #Sets the possible list, and the self.name
     #lowercase letters are the unchanged letters, upcase is solved letters
+    if itself == '\'' || itself == '-'
+      @name = itself
+      @possible = Set[itself]
+      @possible.freeze
+      return
+    end
     @name = itself.downcase
     @not_possible = [itself.upcase]
     @possible = Set.new

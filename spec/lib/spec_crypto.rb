@@ -75,7 +75,7 @@ class TestSolver
 
     it "should find a letter object based on its name" do
       @ts.set_letters()
-      letter = @ts.get_lett_obj('r')
+      letter = @ts.let_list['r']
       letter.name.should eq('r')
       letter.possible.include?('r').should_not be_true
     end
@@ -90,8 +90,8 @@ class TestSolver
 
     true_words = []
     @ts.set_letters()
-    @ts.let_list.each { |w|
-          @ts.append_true(w.name.upcase, true_words)
+    @ts.let_list.each { |trash, w|
+        @ts.append_true(w.name.upcase, true_words)
         }
     true_words.length.should eq(2)
     end
@@ -107,9 +107,9 @@ class TestSolver
       p_words = %w( BAT TAB CAT PET CAB )
       key = "xyz"
       @ts.condense_true(key, p_words)
-      first_letter = @ts.get_lett_obj('x')
-      second_letter = @ts.get_lett_obj('y')
-      third_letter = @ts.get_lett_obj('z')
+      first_letter = @ts.let_list['x']
+      second_letter = @ts.let_list['y']
+      third_letter = @ts.let_list['z']
       true_1st = %w( B T C P )
       true_2nd = %w( A E )
       true_3rd = %w( T B )
@@ -126,14 +126,14 @@ class TestSolver
       u_word = unique_ify(word)
       count = u_word.length
       @ts.word_looper(0, u_word, word, list)
-      list.length.should eq(48)
+      list.length.should eq(68)
 
       list = []
       word = "xzq"
       u_word = unique_ify(word)
       count = u_word.length
       @ts.word_looper(0, u_word, word, list)
-      list.length.should eq(480)
+      list.length.should eq(559)
 
       # list = []
       # word = "xjzq"
