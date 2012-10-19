@@ -92,7 +92,7 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
   end
 
   def go_to_work(which=nil)
-    #takes the passed argument from
+    #takes the passed argument from main.rb
       if which
        p = @p_list[which]
          solve(p)
@@ -102,9 +102,10 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
       @p_list.each { |p|
          solve(p)
          create_solution(p)
-         puts p.solution
+         p.set_solve_date
+         p.to_s
       }
-    end
+      end
   end
 
   def create_solution(puzz)
@@ -152,7 +153,7 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
     sub_z = @let_list[u_word[counter]]
     counter += 1
     sub_z.possible.each { |z|
-          #if word.include? z then next end
+          if word.include?(z.to_s) && z.to_s != "'" then next end
           # ^^ used to shorten possibilities quicker, but causes errors.
           z_word = word.gsub(/#{sub_z.name}/, z.to_s)
           word_looper(counter, u_word, z_word, list)
@@ -263,7 +264,7 @@ class Puzzle
   end
 
   def set_solve_date
-    if @solve_date
+    if @solve_time
       return
     end
     @solve_time = Time.now
@@ -287,7 +288,7 @@ class Puzzle
   end
 
   def to_s
-    print 'Code: ', @crypto,  "\nAuthor: ", @author, "\nDate: ", @publ_date, "\nCompleted: ", @solve_time, "\n"
+    print 'Code: ', @crypto,  "\nDate: ", @publ_date, "\nCompleted: ", @solve_time, "\n"
   end
 end
 

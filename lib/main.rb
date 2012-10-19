@@ -7,3 +7,4 @@ if ARGV[0]
 else
 	s.go_to_work()
 end
+

@@ -4,6 +4,10 @@
 		"selected_items":
 		[
 			[
+				"set_",
+				"set_solve_date"
+			],
+			[
 				"Go",
 				"geocode"
 			],
@@ -31,7 +35,7 @@
 			"file": "lib/crypto.rb",
 			"settings":
 			{
-				"buffer_size": 7977,
+				"buffer_size": 8661,
 				"line_ending": "Windows"
 			}
 		},
@@ -39,7 +43,7 @@
 			"file": "lib/main.rb",
 			"settings":
 			{
-				"buffer_size": 67,
+				"buffer_size": 105,
 				"line_ending": "Windows",
 				"name": "require 'crypto'"
 			}
@@ -48,7 +52,7 @@
 			"file": "spec/lib/spec_crypto.rb",
 			"settings":
 			{
-				"buffer_size": 5745,
+				"buffer_size": 5735,
 				"line_ending": "Windows"
 			}
 		}
@@ -77,10 +81,11 @@
 	},
 	"file_history":
 	[
+		"/C/kata/crypto/bin/english.0",
+		"/C/kata/crypto/lib/loop.rb",
 		"/C/kata/crypto/bin/SMITH.txt",
 		"/C/kata/crypto/bin/README",
 		"/C/kata/crypto/lib/two_kill.rb",
-		"/C/kata/crypto/lib/loop.rb",
 		"/C/kata/crypto/.rspec",
 		"/C/Users/Douglas/AppData/Roaming/Sublime Text 2/Packages/User/Ruby.sublime-settings",
 		"/C/Users/Douglas/AppData/Roaming/Sublime Text 2/Packages/User/Preferences.sublime-settings",
@@ -111,6 +116,9 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"frozen",
+			"XII",
+			"XI",
 			"get_lett",
 			"@ts.get_lett_obj(",
 			"get_lett",
@@ -145,15 +153,15 @@
 					"file": "lib/crypto.rb",
 					"settings":
 					{
-						"buffer_size": 7977,
+						"buffer_size": 8661,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2526,
-								2526
+								2600,
+								2600
 							]
 						],
 						"settings":
@@ -167,7 +175,7 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 882.0,
+						"translation.y": 1002.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -177,15 +185,15 @@
 					"file": "lib/main.rb",
 					"settings":
 					{
-						"buffer_size": 67,
+						"buffer_size": 105,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								67,
-								67
+								77,
+								77
 							]
 						],
 						"settings":
@@ -210,15 +218,15 @@
 					"file": "spec/lib/spec_crypto.rb",
 					"settings":
 					{
-						"buffer_size": 5745,
+						"buffer_size": 5735,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								396,
-								396
+								2017,
+								2017
 							]
 						],
 						"settings":
@@ -238,7 +246,7 @@
 	],
 	"incremental_find":
 	{
-		"height": 0.0
+		"height": 34.0
 	},
 	"input":
 	{
