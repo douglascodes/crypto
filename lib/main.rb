@@ -1,4 +1,9 @@
 require './lib/crypto'
 
 s = Solver.new
-s.go_to_work(1)
+
+if ARGV[0]
+	s.go_to_work(ARGV[0].to_i)
+else
+	s.go_to_work()
+end

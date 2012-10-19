@@ -126,23 +126,25 @@ class TestSolver
       u_word = unique_ify(word)
       count = u_word.length
       @ts.word_looper(0, u_word, word, list)
-      list.length.should eq(68)
+      list.length.should eq(47)
 
       list = []
       word = "xzq"
       u_word = unique_ify(word)
       count = u_word.length
       @ts.word_looper(0, u_word, word, list)
-      list.length.should eq(559)
+      list.length.should eq(433)
 
-      # list = []
-      # word = "xjzq"
-      # u_word = unique_ify(word)
-      # count = u_word.length
-      # @ts.word_looper(0, u_word, word, list)
-      # list.length.should eq(1764)
+      list = []
+      word = "xjzq"
+      u_word = unique_ify(word)
+      count = u_word.length
+      @ts.word_looper(0, u_word, word, list)
+      list.length.should eq(1437)
 
     end
+
+
 
   end
 end

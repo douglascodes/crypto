@@ -42,16 +42,20 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
 
   def set_size_dicts(dicts)
     words = IO.readlines('.\bin\english.0')
-    smith = IO.readlines('.\bin\smith.txt')
+    #smith = IO.readlines('.\bin\smith.txt')
     #words.concat(smith)
     dicts = Array.new(20)
-    dicts[1] = {'A' => 1 , 'I' => 1}
+    words.concat( ['A', 'I', "I'M", "I'D", "I'LL"] )
+    #The used dictionary does not include these
     words.each { |w|
     #if w.include? "'" then next end
       w.chomp!
       w.upcase!
+      if w[0] == 'X' then next end
+        #Removes the roman numerals starting with X. Not needed
       dicts[w.length] ||= Hash.new
       dicts[w.length].merge!({w => w.length})
+
     }
 
     return dicts
@@ -87,21 +91,32 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
     return a, b
   end
 
-  def go_to_work(which=0)
-      #@p_list.each { |p|
-      p = @p_list[which]
-        solve(p)
-        create_solution(p)
-        puts p.solution
-      #}
+  def go_to_work(which=nil)
+    #takes the passed argument from
+      if which
+       p = @p_list[which]
+         solve(p)
+         create_solution(p)
+         puts p.solution
+      else
+      @p_list.each { |p|
+         solve(p)
+         create_solution(p)
+         puts p.solution
+      }
+    end
   end
 
   def create_solution(puzz)
-    puzz.solution = (puzz.crypto << ' - ' << puzz.author)
-    @let_list.each { |l|
-      if l.possible[0]
-        puzz.solution.gsub!(/#{l.name}/, l.possible[0].to_s)
-      end
+    mask = %w[ E T A O I N S H R D L C U M W F G Y P B V K J X Q Z ' -]
+    puzz.solution = (puzz.crypto << "\n" << puzz.author)
+    @let_list.each { |k, v|
+      if v.possible.frozen? then next end
+      if v.possible.empty? then next end
+      priority = v.possible.take_while{ |p|
+        mask.include? p
+      }
+      puzz.solution.gsub!(k, priority.first)
     }
 
   end
@@ -109,23 +124,19 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
   def solve(puzz)
     c = puzz.crypto_broken
     set_letters()
-    # puzz.crypto_broken.each { |s|
-    #   if s.length != 1 then next end
-    #     letter = @let_list[s]
-    #     letter.possible = %w( A I )
-    # }
-    # kill_two(@let_list)
     for z in 1..3
-      for x in 1..c[-1].length
-      c.each { |w|
-        word = w
-        if word.length > x then next end
-        passable_words = Set.new
+      for x in 1..unique_ify(c[-1]).length
+      c.each { |word|
+        #if word.include? "'"  then next end
+        #if word.include? "-"  then next end
         u_word = unique_ify(word)
+        if u_word.length > x then next end
+        passable_words = Set.new
         count = u_word.length
         passable_words = word_looper(0, u_word, word, passable_words)
         remove_badly_formed(passable_words, count)
-        passable_words.each { |w| print w}
+        #passable_words.each { |w| puts w}
+        #Debugging line to see crypto's progress.
         condense_true(u_word, passable_words)
         }
       end
@@ -139,10 +150,10 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
       return
     end
     sub_z = @let_list[u_word[counter]]
-    alphabet = sub_z.possible
     counter += 1
-    alphabet.each { |z|
-          if word.include? z then next end
+    sub_z.possible.each { |z|
+          #if word.include? z then next end
+          # ^^ used to shorten possibilities quicker, but causes errors.
           z_word = word.gsub(/#{sub_z.name}/, z.to_s)
           word_looper(counter, u_word, z_word, list)
           }
@@ -188,12 +199,13 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
     for position in 0...key.length
       letter = @let_list[key[position]]
       if letter.possible.frozen? then next end
+      letter.possible.clear
       words.each { |word|
         if letter.possible.include?(word[position]) then next end
         letter.possible << word[position]
       }
 
-    kill_singles()
+
     end
 
 
@@ -232,7 +244,6 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
   end
 
   def poss(word)
-
     if @dicts[word.length].key?(word) then return true end
     return false
   end
@@ -262,6 +273,14 @@ class Puzzle
     #Breaks PUZZ into the crypto array sorted by word size
     @crypto_broken = Set.new
     @crypto_broken = @crypto.split
+    hyphens = Array.new
+    @crypto_broken.each { |w|
+       if w.include? '-' then hyphens += w.split(/-/) end
+     }
+    @crypto_broken.delete_if { |w|
+      w.include? '-'
+    }
+    @crypto_broken += hyphens
     @crypto_broken = @crypto_broken.each.sort { |a,b|  #Sorts words by size
     unique_ify(a).length <=> unique_ify(b).length
   }
@@ -280,17 +299,17 @@ class Letter
   def initialize(itself)
     #Sets the possible list, and the self.name
     #lowercase letters are the unchanged letters, upcase is solved letters
-    if itself == '\'' || itself == '-'
+    if itself == "'" || itself == '-'
       @name = itself
       @possible = Set[itself]
       @possible.freeze
-      return
-    end
+    else
     @name = itself.downcase
     @not_possible = [itself.upcase]
     @possible = Set.new
     @possible = %w[ E T A O I N S H R D L C U M W F G Y P B V K J X Q Z ]
     @possible.delete(itself.upcase)
+    end
   end
 
 end

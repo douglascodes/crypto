@@ -31,15 +31,24 @@
 			"file": "lib/crypto.rb",
 			"settings":
 			{
-				"buffer_size": 7741,
+				"buffer_size": 7977,
 				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "lib/main.rb",
+			"settings":
+			{
+				"buffer_size": 67,
+				"line_ending": "Windows",
+				"name": "require 'crypto'"
 			}
 		},
 		{
 			"file": "spec/lib/spec_crypto.rb",
 			"settings":
 			{
-				"buffer_size": 5744,
+				"buffer_size": 5745,
 				"line_ending": "Windows"
 			}
 		}
@@ -68,6 +77,11 @@
 	},
 	"file_history":
 	[
+		"/C/kata/crypto/bin/SMITH.txt",
+		"/C/kata/crypto/bin/README",
+		"/C/kata/crypto/lib/two_kill.rb",
+		"/C/kata/crypto/lib/loop.rb",
+		"/C/kata/crypto/.rspec",
 		"/C/Users/Douglas/AppData/Roaming/Sublime Text 2/Packages/User/Ruby.sublime-settings",
 		"/C/Users/Douglas/AppData/Roaming/Sublime Text 2/Packages/User/Preferences.sublime-settings",
 		"/C/Users/Douglas/AppData/Roaming/Sublime Text 2/Packages/Default/Preferences.sublime-settings",
@@ -83,7 +97,7 @@
 	],
 	"find":
 	{
-		"height": 0.0
+		"height": 34.0
 	},
 	"find_in_files":
 	{
@@ -97,6 +111,12 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"get_lett",
+			"@ts.get_lett_obj(",
+			"get_lett",
+			"count_known_letters",
+			"kill_known_letters_from_other_possibles",
+			"print_solution",
 			"end"
 		],
 		"highlight": true,
@@ -105,6 +125,8 @@
 		"regex": false,
 		"replace_history":
 		[
+			"kill_singles",
+			"create_solution"
 		],
 		"reverse": false,
 		"show_context": true,
@@ -123,15 +145,15 @@
 					"file": "lib/crypto.rb",
 					"settings":
 					{
-						"buffer_size": 7741,
+						"buffer_size": 7977,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								4701,
-								4701
+								2526,
+								2526
 							]
 						],
 						"settings":
@@ -145,7 +167,34 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1554.0,
+						"translation.y": 882.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "lib/main.rb",
+					"settings":
+					{
+						"buffer_size": 67,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								67,
+								67
+							]
+						],
+						"settings":
+						{
+							"auto_name": "require 'crypto'",
+							"syntax": "Packages/Ruby/Ruby.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -157,19 +206,19 @@
 			"sheets":
 			[
 				{
-					"buffer": 1,
+					"buffer": 2,
 					"file": "spec/lib/spec_crypto.rb",
 					"settings":
 					{
-						"buffer_size": 5744,
+						"buffer_size": 5745,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								5744,
-								5744
+								396,
+								396
 							]
 						],
 						"settings":
@@ -179,7 +228,7 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 2100.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -227,7 +276,7 @@
 	"menu_visible": true,
 	"replace":
 	{
-		"height": 0.0
+		"height": 62.0
 	},
 	"save_all_on_build": true,
 	"select_file":
