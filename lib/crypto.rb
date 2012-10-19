@@ -41,8 +41,8 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
   end
 
   def set_size_dicts(dicts)
-    words = IO.readlines('.\bin\english.0')
-    #smith = IO.readlines('.\bin\smith.txt')
+    words = IO.readlines('./bin/english.0')
+    #smith = IO.readlines('./bin/smith.txt')
     #words.concat(smith)
     dicts = Array.new(20)
     words.concat( ['A', 'I', "I'M", "I'D", "I'LL"] )
