@@ -28,7 +28,7 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
 
   def get_puzzles
     #Loads puzzles for the solver class to work on
-    f = Document.new(get_feed())
+    f = REXML::Document.new(get_feed())
     r = f.root
     return conform_puzzles(r)
   end
