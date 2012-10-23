@@ -144,7 +144,14 @@ class TestSolver
 
     end
 
+    it "should have two dictionary arrays" do
+      @ts.dicts[3].should be_true
+      @ts.dicts_big[3].should be_true
+    end
 
+    it "should have both parts of a long (+7 letters) word in the same array as hashes with value of total length" do
+      @ts.dicts_big[3].clear
+    end
 
   end
 end

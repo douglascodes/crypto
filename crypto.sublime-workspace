@@ -4,6 +4,14 @@
 		"selected_items":
 		[
 			[
+				"dicts",
+				"dicts_big"
+			],
+			[
+				"unique",
+				"unique_ify"
+			],
+			[
 				"set_",
 				"set_solve_date"
 			],
@@ -31,31 +39,6 @@
 	},
 	"buffers":
 	[
-		{
-			"file": "lib/crypto.rb",
-			"settings":
-			{
-				"buffer_size": 8661,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "lib/main.rb",
-			"settings":
-			{
-				"buffer_size": 105,
-				"line_ending": "Windows",
-				"name": "require 'crypto'"
-			}
-		},
-		{
-			"file": "spec/lib/spec_crypto.rb",
-			"settings":
-			{
-				"buffer_size": 5735,
-				"line_ending": "Windows"
-			}
-		}
 	],
 	"build_system": "",
 	"command_palette":
@@ -81,8 +64,19 @@
 	},
 	"file_history":
 	[
+		"/C/kata/crypto/spec/lib/spec_crypto.rb",
+		"/C/kata/crypto/lib/crypto.rb",
 		"/C/kata/crypto/bin/english.0",
 		"/C/kata/crypto/lib/loop.rb",
+		"/C/Proj/Common Data/Dict/english.3",
+		"/C/kata/crypto/README",
+		"/C/kata/crypto/lib/main.rb",
+		"/C/Proj/Common Data/Dict/american.1",
+		"/C/Proj/Common Data/Dict/american.2",
+		"/C/Proj/Common Data/Dict/american.0",
+		"/C/Users/Douglas/Desktop/api.txt",
+		"/C/kata/crypto/lib/popular_words.txt",
+		"/C/Users/Douglas/Documents/EVE/logs/Chatlogs/AAAArmor_20120905_014843.txt",
 		"/C/kata/crypto/bin/SMITH.txt",
 		"/C/kata/crypto/bin/README",
 		"/C/kata/crypto/lib/two_kill.rb",
@@ -93,9 +87,7 @@
 		"/C/Users/Douglas/AppData/Roaming/Sublime Text 2/Packages/User/Distraction Free.sublime-settings",
 		"/C/lokalty/LU/spec/lib/spec_gtoxls.rb",
 		"/C/lokalty/LU/lib/gtoxls.rb",
-		"/C/kata/crypto/lib/crypto.rb",
 		"/C/lokalty/LU/lib/test.rb",
-		"/C/kata/crypto/spec/lib/spec_crypto.rb",
 		"/C/Rails/Ruby1.9.3/lib/ruby/gems/1.9.1/gems/geocoder-1.1.4/README.md",
 		"/C/Rails/Ruby1.9.3/lib/ruby/gems/1.9.1/gems/geocoder-1.1.4/examples/autoexpire_cache.rb",
 		"/C/lokalty/LU/.rspec"
@@ -116,6 +108,9 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"dicts",
+			"undeser",
+			"undeservedly",
 			"frozen",
 			"XII",
 			"XI",
@@ -145,102 +140,13 @@
 	"groups":
 	[
 		{
-			"selected": 0,
 			"sheets":
 			[
-				{
-					"buffer": 0,
-					"file": "lib/crypto.rb",
-					"settings":
-					{
-						"buffer_size": 8661,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2600,
-								2600
-							]
-						],
-						"settings":
-						{
-							"rulers":
-							[
-								80
-							],
-							"syntax": "Packages/Ruby/Ruby.tmLanguage",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 1002.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "lib/main.rb",
-					"settings":
-					{
-						"buffer_size": 105,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								77,
-								77
-							]
-						],
-						"settings":
-						{
-							"auto_name": "require 'crypto'",
-							"syntax": "Packages/Ruby/Ruby.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				}
 			]
 		},
 		{
-			"selected": 0,
 			"sheets":
 			[
-				{
-					"buffer": 2,
-					"file": "spec/lib/spec_crypto.rb",
-					"settings":
-					{
-						"buffer_size": 5735,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2017,
-								2017
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Ruby/Ruby.tmLanguage",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				}
 			]
 		}
 	],

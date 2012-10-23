@@ -19,11 +19,11 @@ end
 include Unique
 
 class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Saves em.
-  attr_accessor :p_list, :solved, :let_list, :dicts
+  attr_accessor :p_list, :solved, :let_list, :dicts, :dicts_big
   def initialize
     @p_list = get_puzzles() #List of puzzle objects
     @solved = 0             #Simple enumerator for number of solved puzzles
-    @dicts = set_size_dicts(@dicts)
+    @dicts, @dicts_big = set_size_dicts(@dicts, @dicts_big)
   end
 
   def get_puzzles
@@ -40,25 +40,53 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
       return feed
   end
 
-  def set_size_dicts(dicts)
-    words = IO.readlines('./bin/english.0')
-    #smith = IO.readlines('./bin/smith.txt')
+  def set_size_dicts(dicts, dicts_big )
+    #words = IO.readlines('./data/english.0')
+    #smith = IO.readlines('./data/smith.txt')
     #words.concat(smith)
+    words = []
+
+    add_to_word_list(words, './data/english.0')
     dicts = Array.new(20)
-    words.concat( ['A', 'I', "I'M", "I'D", "I'LL"] )
+    dicts_big = Array.new(20)
+    words.concat( ['A', 'I', "I'M", "I'D", "I'LL", "UNDESERVEDLY"] )
     #The used dictionary does not include these
     words.each { |w|
-    #if w.include? "'" then next end
+      # w.chomp!
+      # w.upcase!
+      # if w[0] == 'X' then next end
+      #   #Removes the roman numerals starting with X. Not needed
+      # dicts[w.length] ||= Hash.new
+      # if dicts[w.length].has_key?(w) then next end
+      # dicts[w.length].merge!({w => w.length})
       w.chomp!
       w.upcase!
       if w[0] == 'X' then next end
-        #Removes the roman numerals starting with X. Not needed
-      dicts[w.length] ||= Hash.new
-      dicts[w.length].merge!({w => w.length})
-
+      if unique_ify(w).length <= 7
+        add_word(w, dicts)
+      else
+        add_bigword(w, dicts_big)
+      end
     }
+    return dicts, dicts_big
+  end
 
-    return dicts
+  def add_to_word_list(w_array, file)
+    f = IO.readlines(file)
+    w_array.concat(f)
+  end
+
+  def add_word(w, dicts)
+       #Removes the roman numerals starting with X. Not needed
+      dicts[w.length] ||= Hash.new
+      if dicts[w.length].has_key?(w) then return end
+      dicts[w.length].merge!({w => w.length})
+  end
+
+  def add_bigword(w, dicts)
+      dicts[w.length-7] ||= Hash.new
+      if dicts[w.length-7].has_key?(w) then return end
+      dicts[w.length-7].merge!({w => w.length})
   end
 
   def conform_puzzles(root)
@@ -98,6 +126,7 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
          solve(p)
          create_solution(p)
          puts p.solution
+         puts @dicts_big[1]
       else
       @p_list.each { |p|
          solve(p)
@@ -118,6 +147,7 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
         mask.include? p
       }
       puzz.solution.gsub!(k, priority.first)
+
     }
 
   end
@@ -132,22 +162,25 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
         #if word.include? "-"  then next end
         u_word = unique_ify(word)
         if u_word.length > x then next end
+        #if u_word.length > 7 then next end
+        #^^ for dubgging long words
         passable_words = Set.new
         count = u_word.length
         passable_words = word_looper(0, u_word, word, passable_words)
         remove_badly_formed(passable_words, count)
-        #passable_words.each { |w| puts w}
+        passable_words.each { |w| puts w}
         #Debugging line to see crypto's progress.
         condense_true(u_word, passable_words)
         }
       end
+      #kill_singles()
     end
   end
 
   def word_looper(counter, u_word, word, list)
     if counter == u_word.length
       append_true(word, list)
-      #puts word
+      #print word
       return
     end
     sub_z = @let_list[u_word[counter]]
@@ -223,15 +256,16 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
     singulars = Set.new
 
     @let_list.each { |x, l|
-      if l.possible.length == 1 then singulars << l end
+      if l.possible.length == 1 then singulars << l.possible.first end
     }
 
-    singulars.each { |p|
+    singulars.each { |s|
      @let_list.each { |x, l|
-       if l.possible.length == 1 then next end
+       if l.possible.includes? s == 1 then next end
        l.possible.delete(p.possible)
      }
-    }
+   }
+
   end
 
   def set_letters()
@@ -245,7 +279,11 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
   end
 
   def poss(word)
-    if @dicts[word.length].key?(word) then return true end
+    if unique_ify(word).length <= 7
+      if @dicts[word.length].key?(word) then return true end
+    else
+      if @dicts_big[word.length-7].key?(word) then return true end
+    end
     return false
   end
 end
