@@ -111,7 +111,10 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
   def seperate_author(unbroken)
     #Sets puzzle to unsolved letters (downcase) and removes punctuation
     unbroken.downcase!
-    a, b = unbroken.split(/[.?!] - /)
+    a, b = unbroken.split(/[.?!]"* - /)
+    # Special thanks to RUBULAR.com
+    # Breaks the puzzle at the Crypto/Author break. Author starts with" -"
+    # Sentence ends with punctuation. So "! -", ". -", '?" -' all must be accounted
     a.delete!(".,!?:;&()")
     a.strip!
     b.delete!(".,!?:;&()")
