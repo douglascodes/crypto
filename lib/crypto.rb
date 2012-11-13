@@ -168,7 +168,7 @@ class Solver   #The problem solver class. Gets puzzles, parses em, Solves em. Sa
         count = u_word.length
         passable_words = word_looper(0, u_word, word, passable_words)
         remove_badly_formed(passable_words, count)
-        passable_words.each { |w| puts w}
+        #passable_words.each { |w| puts w}
         #Debugging line to see crypto's progress.
         condense_true(u_word, passable_words)
         }
